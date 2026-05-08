@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Jewel Beetle</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink:      #1a120b;
+      --parchment:#f5efdf;
+      --amber:    #c8860a;
+      --forest:   #1e3a2f;
+      --iridescent:#4db89e;
+      --rust:     #8b3a1d;
+      --gold:     #e2b34b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--parchment);
+      color: var(--ink);
+      font-family: 'DM Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.35;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-left {
+      background: var(--forest);
+      display: flex;
+      align-items: flex-end;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative ring behind beetle */
+    .hero-left::before {
+      content: '';
+      position: absolute;
+      width: 420px; height: 420px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.08);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-ring 4s ease-in-out infinite;
+    }
+    .hero-left::after {
+      content: '';
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      border: 1px solid rgba(77,184,158,0.2);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-ring 4s ease-in-out infinite 1s;
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+      50%       { transform: translate(-50%, -50%) scale(1.05); opacity: 0.5; }
+    }
+
+    .beetle-wrap {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: float 6s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+      50%       { transform: translate(-50%, -50%) translateY(-18px); }
+    }
+
+    /* ── BEETLE PHOTO ── */
+    .beetle-photo {
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      object-fit: cover;
+      object-position: center;
+      box-shadow: 0 0 0 6px rgba(77,184,158,0.25), 0 0 0 12px rgba(77,184,158,0.1), 0 24px 60px rgba(0,0,0,0.7);
+      filter: brightness(1.05) saturate(1.2);
+    }
+
+    .hero-right {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 4rem 3.5rem 4rem 3rem;
+      position: relative;
+    }
+
+    .label {
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 1.2rem;
+      opacity: 0;
+      animation: fade-up 0.7s 0.2s forwards;
+    }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 0.95;
+      color: var(--ink);
+      margin-bottom: 0.3rem;
+      opacity: 0;
+      animation: fade-up 0.7s 0.4s forwards;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    .binomial {
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--forest);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fade-up 0.7s 0.55s forwards;
+    }
+
+    .divider {
+      width: 40px; height: 2px;
+      background: var(--amber);
+      margin-bottom: 1.8rem;
+      opacity: 0;
+      animation: fade-up 0.7s 0.65s forwards;
+    }
+
+    .intro {
+      font-size: 0.8rem;
+      line-height: 1.9;
+      color: #3a2e24;
+      max-width: 38ch;
+      opacity: 0;
+      animation: fade-up 0.7s 0.75s forwards;
+    }
+
+    /* stats bar */
+    .stats {
+      margin-top: 2.5rem;
+      display: flex; gap: 2rem;
+      opacity: 0;
+      animation: fade-up 0.7s 0.9s forwards;
+    }
+
+    .stat-item { display: flex; flex-direction: column; gap: 0.25rem; }
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem; font-weight: 700;
+      color: var(--amber); line-height: 1;
+    }
+    .stat-label {
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: #7a6a58;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* corner decoration */
+    .corner-tl, .corner-br {
+      position: absolute;
+      width: 60px; height: 60px;
+      opacity: 0.25;
+    }
+    .corner-tl { top: 1.5rem; right: 1.5rem; border-top: 1px solid var(--ink); border-right: 1px solid var(--ink); }
+    .corner-br { bottom: 1.5rem; left: 1.5rem; border-bottom: 1px solid var(--ink); border-left: 1px solid var(--ink); }
+
+    /* ── BODY SECTIONS ── */
+    .content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 5rem 2rem;
+    }
+
+    .section-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      border: 1px solid rgba(26,18,11,0.15);
+    }
+
+    .section-card {
+      padding: 2.5rem 2rem;
+      border-right: 1px solid rgba(26,18,11,0.15);
+      position: relative;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+    .section-card:last-child { border-right: none; }
+    .section-card:hover { background: rgba(200,134,10,0.05); }
+
+    .card-num {
+      font-size: 0.6rem; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--amber);
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem; font-weight: 700;
+      line-height: 1.2;
+      color: var(--forest);
+      margin-bottom: 1rem;
+    }
+
+    .card-body {
+      font-size: 0.75rem; line-height: 1.85;
+      color: #4a3e32;
+    }
+
+    /* ── IRIDESCENCE SECTION ── */
+    .irid-section {
+      background: var(--ink);
+      padding: 5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .irid-section::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(77,184,158,0.12) 0%, transparent 70%);
+      top: -100px; right: -100px;
+    }
+
+    .irid-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .irid-text .section-label {
+      font-size: 0.6rem; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--iridescent);
+      margin-bottom: 1.2rem;
+    }
+
+    .irid-text h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 700; line-height: 1.15;
+      color: var(--parchment);
+      margin-bottom: 1.5rem;
+    }
+
+    .irid-text p {
+      font-size: 0.78rem; line-height: 1.9;
+      color: rgba(245,239,223,0.65);
+    }
+
+    /* colour spectrum bars */
+    .spectrum {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .spec-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .spec-bar {
+      height: 6px;
+      border-radius: 3px;
+      flex: 1;
+    }
+
+    .spec-name {
+      font-size: 0.6rem; letter-spacing: 0.15em;
+      text-transform: uppercase; color: rgba(245,239,223,0.5);
+      width: 5rem;
+      text-align: right;
+    }
+
+    /* ── LIFECYCLE ── */
+    .lifecycle {
+      padding: 5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .lifecycle h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      font-weight: 700;
+      margin-bottom: 3rem;
+      position: relative;
+      display: inline-block;
+    }
+
+    .lifecycle h2::after {
+      content: '';
+      position: absolute;
+      bottom: -10px; left: 0;
+      width: 100%; height: 2px;
+      background: linear-gradient(90deg, var(--amber), transparent);
+    }
+
+    .timeline {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 28px; left: 0; right: 0;
+      height: 1px;
+      background: rgba(26,18,11,0.15);
+    }
+
+    .tl-step {
+      flex: 1;
+      padding-top: 4rem;
+      position: relative;
+      padding-right: 1.5rem;
+    }
+
+    .tl-dot {
+      position: absolute;
+      top: 20px; left: 0;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--parchment);
+      border: 2px solid var(--amber);
+      z-index: 1;
+      transition: background 0.3s;
+    }
+    .tl-step:hover .tl-dot { background: var(--amber); }
+
+    .tl-num {
+      font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--amber);
+      margin-bottom: 0.4rem;
+    }
+
+    .tl-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem; font-weight: 700;
+      margin-bottom: 0.6rem;
+      color: var(--forest);
+    }
+
+    .tl-desc {
+      font-size: 0.7rem; line-height: 1.8;
+      color: #5a4e42;
+    }
+
+    /* ── QUOTE BLOCK ── */
+    .quote-block {
+      background: var(--forest);
+      margin: 0;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    blockquote {
+      max-width: 680px;
+      margin: 0 auto;
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      font-style: italic;
+      color: var(--parchment);
+      line-height: 1.5;
+    }
+
+    blockquote cite {
+      display: block;
+      margin-top: 1.2rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      font-style: normal;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    /* ── FOOTER NOTE ── */
+    .footnote {
+      padding: 2rem;
+      text-align: center;
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      color: #9a8a78;
+      border-top: 1px solid rgba(26,18,11,0.1);
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-left { min-height: 55vw; }
+      .section-grid { grid-template-columns: 1fr; }
+      .section-card { border-right: none; border-bottom: 1px solid rgba(26,18,11,0.15); }
+      .irid-inner { grid-template-columns: 1fr; gap: 2.5rem; }
+      .timeline { flex-direction: column; gap: 2rem; }
+      .timeline::before { display: none; }
+      .tl-step { padding-top: 0; padding-left: 2rem; }
+      .tl-dot { top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════ HERO ════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="beetle-wrap">
+      <img
+        class="beetle-photo"
+        src="https://images.pexels.com/photos/1114318/pexels-photo-1114318.jpeg?auto=compress&cs=tinysrgb&w=600"
+        alt="Macro photograph of a jewel beetle on a green leaf"
+      />
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="corner-tl"></div>
+    <div class="corner-br"></div>
+    <p class="label">Natural History · Coleoptera</p>
+    <h1>The <em>Jewel</em><br>Beetle</h1>
+    <p class="binomial">Buprestidae — Est. 250 million years ago</p>
+    <div class="divider"></div>
+    <p class="intro">
+      Hidden within forest canopies and sun-warmed timber, the jewel beetle is
+      one of nature's most spectacular optical illusions — a living gemstone
+      that has captivated humans, artists, and scientists for millennia.
+    </p>
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-num">15k</span>
+        <span class="stat-label">Species</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">100+</span>
+        <span class="stat-label">Countries</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">80mm</span>
+        <span class="stat-label">Max Length</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ CARDS ════════════════════════════════ -->
+<div class="content">
+  <div class="section-grid">
+    <div class="section-card">
+      <p class="card-num">01 — Habitat</p>
+      <h3 class="card-title">Where They Thrive</h3>
+      <p class="card-body">
+        Jewel beetles colonise every continent except Antarctica, favouring
+        warm, humid forests where dead or dying wood is abundant. Many species
+        are critically dependent on old-growth trees, making them key
+        indicators of forest ecosystem health. Larvae spend years tunnelling
+        through heartwood, reshaping the forest from within.
+      </p>
+    </div>
+    <div class="section-card">
+      <p class="card-num">02 — Diet</p>
+      <h3 class="card-title">Timber &amp; Pollen</h3>
+      <p class="card-body">
+        Adult jewel beetles feed on nectar, pollen, and foliage, becoming
+        accidental pollinators as they move between flowers. Their larvae,
+        however, are dedicated xylophages — burrowing into phloem and
+        heartwood where they digest cellulose-rich material using specialised
+        gut microbiota, a biological feat still under scientific investigation.
+      </p>
+    </div>
+    <div class="section-card">
+      <p class="card-num">03 — Behaviour</p>
+      <h3 class="card-title">Pyrophilous Senses</h3>
+      <p class="card-body">
+        Certain jewel beetles (<em>Melanophila</em>) possess infrared
+        pit organs on their thorax — among the most sensitive heat detectors
+        in the animal kingdom. They detect forest fires from 80 km away and
+        race toward smouldering trees to lay eggs in freshly charred wood,
+        before competitors arrive. Fire is their opportunity.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════ IRIDESCENCE ════════════════════════════ -->
+<section class="irid-section">
+  <div class="irid-inner">
+    <div class="irid-text">
+      <p class="section-label">Structural Colour · Photonics</p>
+      <h2>Not Pigment,<br>But Physics</h2>
+      <p>
+        The jewel beetle's extraordinary shimmer contains no coloured dye.
+        Its elytra are layered with thin-film nanostructures — stacked
+        cuticle lamellae just 70–200 nm thick. Incident light reflects
+        from each layer, interfering constructively at specific wavelengths
+        to produce colours that shift and sing as the viewing angle changes.
+        Scientists have replicated this structure to create
+        next-generation anti-counterfeiting materials and bio-inspired optical films.
+      </p>
+    </div>
+    <div class="spectrum">
+      <div class="spec-row">
+        <span class="spec-name">Emerald</span>
+        <div class="spec-bar" style="background: linear-gradient(90deg, #1a6649 0%, #4db89e 60%, #a8f0dc 100%); width:90%;"></div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-name">Gold</span>
+        <div class="spec-bar" style="background: linear-gradient(90deg, #8b5e00 0%, #e2b34b 60%, #fff0a0 100%); width:75%;"></div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-name">Copper</span>
+        <div class="spec-bar" style="background: linear-gradient(90deg, #6b2800 0%, #c8640a 60%, #f0a060 100%); width:65%;"></div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-name">Violet</span>
+        <div class="spec-bar" style="background: linear-gradient(90deg, #2a0050 0%, #8040c0 60%, #d0a0ff 100%); width:50%;"></div>
+      </div>
+      <div class="spec-row">
+        <span class="spec-name">Azure</span>
+        <div class="spec-bar" style="background: linear-gradient(90deg, #001a4a 0%, #2060c0 60%, #80b0ff 100%); width:80%;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ LIFECYCLE ════════════════════════════ -->
+<section class="lifecycle">
+  <h2>Life Cycle</h2>
+  <div class="timeline">
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <p class="tl-num">Stage 01</p>
+      <h4 class="tl-title">Egg</h4>
+      <p class="tl-desc">Females lay eggs in bark crevices or freshly scorched wood. Each clutch may contain 40–100 eggs. Hatching occurs within 1–3 weeks depending on temperature.</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <p class="tl-num">Stage 02</p>
+      <h4 class="tl-title">Larva</h4>
+      <p class="tl-desc">The legless larva bores sinuous galleries deep into wood, feeding for 1–5 years. This phase sculpts the distinctive winding trails visible in salvaged timber.</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <p class="tl-num">Stage 03</p>
+      <h4 class="tl-title">Pupa</h4>
+      <p class="tl-desc">The larva carves a pupal chamber near the surface and metamorphoses for 3–6 weeks as the jewelled shell and compound eyes take form beneath old skin.</p>
+    </div>
+    <div class="tl-step">
+      <div class="tl-dot"></div>
+      <p class="tl-num">Stage 04</p>
+      <h4 class="tl-title">Adult</h4>
+      <p class="tl-desc">The adult chews a perfectly oval exit hole and emerges to live just 2–6 weeks — its sole purpose to feed, find a mate, and ensure the next generation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════════════════════ QUOTE ════════════════════════════════ -->
+<div class="quote-block">
+  <blockquote>
+    "It is not possible to look long upon a jewel beetle and remain indifferent
+     to the extraordinary ingenuity of evolution."
+    <cite>— Naturalist's Field Journal, 1887</cite>
+  </blockquote>
+</div>
+
+<p class="footnote">Buprestidae · Order Coleoptera · Kingdom Animalia</p>
+
+</body>
+</html>

@@ -1,607 +1,371 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The Jewel Beetle</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet" />
+<html lang="nl"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wildspoor — Ontdek de natuur om je heen</title>
+  <meta name="description" content="Wildspoor nodigt stadsbewooners uit om wilde insecten te ontdekken in hun eigen wijk.">
+  <link rel="stylesheet" href="css/style.css">
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --ink:      #1a120b;
-      --parchment:#f5efdf;
-      --amber:    #c8860a;
-      --forest:   #1e3a2f;
-      --iridescent:#4db89e;
-      --rust:     #8b3a1d;
-      --gold:     #e2b34b;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background-color: var(--parchment);
-      color: var(--ink);
-      font-family: 'DM Mono', monospace;
-      overflow-x: hidden;
-    }
-
-    /* ── NOISE TEXTURE OVERLAY ── */
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 999;
-      opacity: 0.35;
-    }
-
-    /* ── HERO ── */
-    .hero {
+    /* Index-specific */
+    .home-hero {
       min-height: 100vh;
+      background: linear-gradient(160deg, var(--dew) 0%, #e8f0d0 50%, var(--morning) 100%);
       display: grid;
       grid-template-columns: 1fr 1fr;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero-left {
-      background: var(--forest);
-      display: flex;
-      align-items: flex-end;
-      padding: 3rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Decorative ring behind beetle */
-    .hero-left::before {
-      content: '';
-      position: absolute;
-      width: 420px; height: 420px;
-      border-radius: 50%;
-      border: 1px solid rgba(255,255,255,0.08);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      animation: pulse-ring 4s ease-in-out infinite;
-    }
-    .hero-left::after {
-      content: '';
-      position: absolute;
-      width: 300px; height: 300px;
-      border-radius: 50%;
-      border: 1px solid rgba(77,184,158,0.2);
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      animation: pulse-ring 4s ease-in-out infinite 1s;
-    }
-
-    @keyframes pulse-ring {
-      0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-      50%       { transform: translate(-50%, -50%) scale(1.05); opacity: 0.5; }
-    }
-
-    .beetle-wrap {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      animation: float 6s ease-in-out infinite;
-    }
-
-    @keyframes float {
-      0%, 100% { transform: translate(-50%, -50%) translateY(0); }
-      50%       { transform: translate(-50%, -50%) translateY(-18px); }
-    }
-
-    /* ── BEETLE PHOTO ── */
-    .beetle-photo {
-      width: 260px; height: 260px;
-      border-radius: 50%;
-      object-fit: cover;
-      object-position: center;
-      box-shadow: 0 0 0 6px rgba(77,184,158,0.25), 0 0 0 12px rgba(77,184,158,0.1), 0 24px 60px rgba(0,0,0,0.7);
-      filter: brightness(1.05) saturate(1.2);
-    }
-
-    .hero-right {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 4rem 3.5rem 4rem 3rem;
-      position: relative;
-    }
-
-    .label {
-      font-size: 0.65rem;
-      letter-spacing: 0.28em;
-      text-transform: uppercase;
-      color: var(--amber);
-      margin-bottom: 1.2rem;
-      opacity: 0;
-      animation: fade-up 0.7s 0.2s forwards;
-    }
-
-    h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(3rem, 6vw, 5.5rem);
-      font-weight: 900;
-      line-height: 0.95;
-      color: var(--ink);
-      margin-bottom: 0.3rem;
-      opacity: 0;
-      animation: fade-up 0.7s 0.4s forwards;
-    }
-
-    h1 em {
-      font-style: italic;
-      color: var(--rust);
-    }
-
-    .binomial {
-      font-size: 0.75rem;
-      letter-spacing: 0.1em;
-      color: var(--forest);
-      margin-bottom: 2rem;
-      opacity: 0;
-      animation: fade-up 0.7s 0.55s forwards;
-    }
-
-    .divider {
-      width: 40px; height: 2px;
-      background: var(--amber);
-      margin-bottom: 1.8rem;
-      opacity: 0;
-      animation: fade-up 0.7s 0.65s forwards;
-    }
-
-    .intro {
-      font-size: 0.8rem;
-      line-height: 1.9;
-      color: #3a2e24;
-      max-width: 38ch;
-      opacity: 0;
-      animation: fade-up 0.7s 0.75s forwards;
-    }
-
-    /* stats bar */
-    .stats {
-      margin-top: 2.5rem;
-      display: flex; gap: 2rem;
-      opacity: 0;
-      animation: fade-up 0.7s 0.9s forwards;
-    }
-
-    .stat-item { display: flex; flex-direction: column; gap: 0.25rem; }
-    .stat-num {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem; font-weight: 700;
-      color: var(--amber); line-height: 1;
-    }
-    .stat-label {
-      font-size: 0.6rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: #7a6a58;
-    }
-
-    @keyframes fade-up {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* corner decoration */
-    .corner-tl, .corner-br {
-      position: absolute;
-      width: 60px; height: 60px;
-      opacity: 0.25;
-    }
-    .corner-tl { top: 1.5rem; right: 1.5rem; border-top: 1px solid var(--ink); border-right: 1px solid var(--ink); }
-    .corner-br { bottom: 1.5rem; left: 1.5rem; border-bottom: 1px solid var(--ink); border-left: 1px solid var(--ink); }
-
-    /* ── BODY SECTIONS ── */
-    .content {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 5rem 2rem;
-    }
-
-    .section-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 0;
-      border: 1px solid rgba(26,18,11,0.15);
-    }
-
-    .section-card {
-      padding: 2.5rem 2rem;
-      border-right: 1px solid rgba(26,18,11,0.15);
-      position: relative;
-      overflow: hidden;
-      transition: background 0.3s;
-    }
-    .section-card:last-child { border-right: none; }
-    .section-card:hover { background: rgba(200,134,10,0.05); }
-
-    .card-num {
-      font-size: 0.6rem; letter-spacing: 0.25em;
-      text-transform: uppercase; color: var(--amber);
-      margin-bottom: 1rem;
-    }
-
-    .card-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.5rem; font-weight: 700;
-      line-height: 1.2;
-      color: var(--forest);
-      margin-bottom: 1rem;
-    }
-
-    .card-body {
-      font-size: 0.75rem; line-height: 1.85;
-      color: #4a3e32;
-    }
-
-    /* ── IRIDESCENCE SECTION ── */
-    .irid-section {
-      background: var(--ink);
-      padding: 5rem 2rem;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .irid-section::before {
-      content: '';
-      position: absolute;
-      width: 600px; height: 600px;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(77,184,158,0.12) 0%, transparent 70%);
-      top: -100px; right: -100px;
-    }
-
-    .irid-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 5rem;
       align-items: center;
-    }
-
-    .irid-text .section-label {
-      font-size: 0.6rem; letter-spacing: 0.28em;
-      text-transform: uppercase; color: var(--iridescent);
-      margin-bottom: 1.2rem;
-    }
-
-    .irid-text h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 4vw, 3.2rem);
-      font-weight: 700; line-height: 1.15;
-      color: var(--parchment);
-      margin-bottom: 1.5rem;
-    }
-
-    .irid-text p {
-      font-size: 0.78rem; line-height: 1.9;
-      color: rgba(245,239,223,0.65);
-    }
-
-    /* colour spectrum bars */
-    .spectrum {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .spec-row {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .spec-bar {
-      height: 6px;
-      border-radius: 3px;
-      flex: 1;
-    }
-
-    .spec-name {
-      font-size: 0.6rem; letter-spacing: 0.15em;
-      text-transform: uppercase; color: rgba(245,239,223,0.5);
-      width: 5rem;
-      text-align: right;
-    }
-
-    /* ── LIFECYCLE ── */
-    .lifecycle {
-      padding: 5rem 2rem;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .lifecycle h2 {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.8rem, 3vw, 2.6rem);
-      font-weight: 700;
-      margin-bottom: 3rem;
+      gap: 3rem;
+      padding: 8rem 6rem 5rem;
       position: relative;
-      display: inline-block;
+      overflow: hidden;
     }
-
-    .lifecycle h2::after {
-      content: '';
-      position: absolute;
-      bottom: -10px; left: 0;
-      width: 100%; height: 2px;
-      background: linear-gradient(90deg, var(--amber), transparent);
+    @media (max-width: 860px) {
+      .home-hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 4rem; text-align: center; }
+      .hero-insects { justify-content: center; }
     }
-
-    .timeline {
-      display: flex;
-      gap: 0;
-      position: relative;
-    }
-
-    .timeline::before {
-      content: '';
-      position: absolute;
-      top: 28px; left: 0; right: 0;
-      height: 1px;
-      background: rgba(26,18,11,0.15);
-    }
-
-    .tl-step {
-      flex: 1;
-      padding-top: 4rem;
-      position: relative;
-      padding-right: 1.5rem;
-    }
-
-    .tl-dot {
-      position: absolute;
-      top: 20px; left: 0;
-      width: 16px; height: 16px;
-      border-radius: 50%;
-      background: var(--parchment);
-      border: 2px solid var(--amber);
-      z-index: 1;
-      transition: background 0.3s;
-    }
-    .tl-step:hover .tl-dot { background: var(--amber); }
-
-    .tl-num {
-      font-size: 0.6rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--amber);
-      margin-bottom: 0.4rem;
-    }
-
-    .tl-title {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.1rem; font-weight: 700;
-      margin-bottom: 0.6rem;
-      color: var(--forest);
-    }
-
-    .tl-desc {
-      font-size: 0.7rem; line-height: 1.8;
-      color: #5a4e42;
-    }
-
-    /* ── QUOTE BLOCK ── */
-    .quote-block {
-      background: var(--forest);
-      margin: 0;
-      padding: 4rem 2rem;
-      text-align: center;
-    }
-
-    blockquote {
-      max-width: 680px;
-      margin: 0 auto;
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(1.3rem, 3vw, 2rem);
-      font-style: italic;
-      color: var(--parchment);
-      line-height: 1.5;
-    }
-
-    blockquote cite {
-      display: block;
-      margin-top: 1.2rem;
-      font-size: 0.65rem;
+    .hero-tagline {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
       letter-spacing: 0.2em;
-      font-style: normal;
-      color: var(--gold);
       text-transform: uppercase;
+      color: var(--leaf);
+      margin-bottom: 1rem;
     }
+    .hero-h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--soil);
+      margin-bottom: 1.25rem;
+    }
+    .hero-h1 em { color: var(--moss); font-style: italic; }
+    .hero-desc { color: var(--text-mid); max-width: 460px; font-size: 1.05rem; line-height: 1.75; margin-bottom: 2rem; }
+    .hero-cta { display: flex; gap: 1rem; flex-wrap: wrap; }
 
-    /* ── FOOTER NOTE ── */
-    .footnote {
-      padding: 2rem;
+    .hero-insects {
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+    }
+    .hero-insect-bubble {
+      width: 130px; height: 130px;
+      border-radius: 50%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      font-size: 3.5rem;
+      position: relative;
+      animation: float-gentle ease-in-out infinite;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.3s;
+    }
+    .hero-insect-bubble:hover { transform: scale(1.08); }
+    .hib-1 { background: linear-gradient(135deg,#d4e8a0,#a8c070); animation-duration: 5s; }
+    .hib-2 { background: linear-gradient(135deg,#fffde0,#f0e080); animation-duration: 7s; animation-delay: 1s; width: 110px; height: 110px; font-size: 3rem; }
+    .hib-3 { background: linear-gradient(135deg,#ffe0e0,#f0a0a0); animation-duration: 6s; animation-delay: 2s; width: 120px; height: 120px; font-size: 3.2rem; }
+    .hib-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-mid);
+      margin-top: 0.3rem;
       text-align: center;
-      font-size: 0.6rem;
-      letter-spacing: 0.12em;
-      color: #9a8a78;
-      border-top: 1px solid rgba(26,18,11,0.1);
     }
 
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      .hero { grid-template-columns: 1fr; min-height: auto; }
-      .hero-left { min-height: 55vw; }
-      .section-grid { grid-template-columns: 1fr; }
-      .section-card { border-right: none; border-bottom: 1px solid rgba(26,18,11,0.15); }
-      .irid-inner { grid-template-columns: 1fr; gap: 2.5rem; }
-      .timeline { flex-direction: column; gap: 2rem; }
-      .timeline::before { display: none; }
-      .tl-step { padding-top: 0; padding-left: 2rem; }
-      .tl-dot { top: 0; }
+    /* How it works section */
+    .how-section {
+      padding: 6rem 1.5rem;
+      background: white;
     }
+    .how-inner { max-width: 900px; margin: 0 auto; }
+    .how-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+    .how-step {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      position: relative;
+    }
+    .how-step-num {
+      font-family: var(--font-display);
+      font-size: 3rem;
+      color: var(--morning);
+      line-height: 1;
+      font-weight: 700;
+    }
+    .how-step h3 { font-size: 1.05rem; }
+    .how-step p { font-size: 0.9rem; color: var(--text-mid); }
+
+    /* Mission section */
+    .mission-section {
+      background: var(--soil);
+      color: var(--cream);
+      padding: 6rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .mission-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 100% 80% at 50% 100%, rgba(90,112,64,0.25), transparent);
+    }
+    .mission-inner { max-width: 700px; margin: 0 auto; text-align: center; position: relative; }
+    .mission-inner h2 { color: var(--lichen); margin-bottom: 1.25rem; }
+    .mission-inner p { color: rgba(248,244,232,0.75); font-size: 1.05rem; line-height: 1.8; margin-bottom: 1rem; }
+
+    /* Spoorpark section */
+    .spoorpark-section {
+      padding: 5rem 1.5rem;
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3rem;
+      align-items: center;
+    }
+    @media (max-width: 700px) { .spoorpark-section { grid-template-columns: 1fr; } }
+    .spoorpark-map-placeholder {
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg, var(--moss), var(--bark));
+      aspect-ratio: 4/3;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: white; gap: 0.5rem;
+      font-family: var(--font-mono); font-size: 0.85rem;
+      position: relative; overflow: hidden;
+    }
+    .spoorpark-map-placeholder::after {
+      content: '🗺️';
+      position: absolute;
+      font-size: 6rem;
+      opacity: 0.08;
+      bottom: -1rem; right: -1rem;
+    }
+    .spoorpark-map-icon { font-size: 2.5rem; }
   </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════ HERO ════════════════════════════════ -->
-<section class="hero">
-  <div class="hero-left">
-    <div class="beetle-wrap">
-      <img
-        class="beetle-photo"
-        src="https://images.pexels.com/photos/1114318/pexels-photo-1114318.jpeg?auto=compress&cs=tinysrgb&w=600"
-        alt="Macro photograph of a jewel beetle on a green leaf"
-      />
-    </div>
-  </div>
+<!-- ══ HEADER ══════════════════════════════════════════ -->
+<header class="site-header">
+  <a href="index.html" class="logo-wrap">
+    <div class="logo-icon">🌿</div><!-- Replace with <img src="images/logo.png" alt="Wildspoor"> -->
+    <span class="logo-name">Wild<span>spoor</span></span>
+  </a>
+  <nav>
+    <ul class="nav-links">
+      <li><a href="index.html" data-lang="nl">Concept</a><a href="index.html" data-lang="en">Concept</a></li>
+      <li><a href="kever.html" data-lang="nl">Insecten</a><a href="kever.html" data-lang="en">Insects</a></li>
+      <li><a href="meedoen.html" data-lang="nl">Meedoen</a><a href="meedoen.html" data-lang="en">Join</a></li>
+    </ul>
+  </nav>
+  <button class="lang-toggle">EN</button>
+</header>
 
-  <div class="hero-right">
-    <div class="corner-tl"></div>
-    <div class="corner-br"></div>
-    <p class="label">Natural History · Coleoptera</p>
-    <h1>The <em>Jewel</em><br>Beetle</h1>
-    <p class="binomial">Buprestidae — Est. 250 million years ago</p>
-    <div class="divider"></div>
-    <p class="intro">
-      Hidden within forest canopies and sun-warmed timber, the jewel beetle is
-      one of nature's most spectacular optical illusions — a living gemstone
-      that has captivated humans, artists, and scientists for millennia.
+<!-- ══ HERO ════════════════════════════════════════════ -->
+<section class="home-hero">
+  <div class="hero-bg-leaves"></div>
+
+  <div class="hero-text">
+    <p class="hero-tagline">Spoorpark · Tilburg · 2024</p>
+
+    <h1 class="hero-h1" data-lang="nl">
+      Ontdek <em>wilde<br>natuur</em> om<br>je heen
+    </h1>
+    <h1 class="hero-h1" data-lang="en">
+      Discover <em>wild<br>nature</em> around<br>you
+    </h1>
+
+    <p class="hero-desc" data-lang="nl">
+      In het Spoorpark in Tilburg leven drie bijzondere insecten. Maar hoe vind je ze? Volg de borden, scan de QR-codes, en leer waarom deze wilde natuur zo waardevol is voor jouw buurt.
     </p>
-    <div class="stats">
-      <div class="stat-item">
-        <span class="stat-num">15k</span>
-        <span class="stat-label">Species</span>
+    <p class="hero-desc" data-lang="en">
+      Three special insects live in Spoorpark, Tilburg. But how do you find them? Follow the signs, scan the QR codes, and discover why this wild nature is so valuable for your neighbourhood.
+    </p>
+
+    <div class="hero-cta">
+      <a href="#hoe-het-werkt" class="btn btn-primary" data-lang="nl">Zo werkt het →</a>
+      <a href="#hoe-het-werkt" class="btn btn-primary" data-lang="en">How it works →</a>
+      <a href="meedoen.html" class="btn btn-outline" data-lang="nl">Voor jouw plek</a>
+      <a href="meedoen.html" class="btn btn-outline" data-lang="en">For your space</a>
+    </div>
+  </div>
+
+  <div class="hero-insects">
+    <div>
+      <a href="kever.html" class="hero-insect-bubble hib-1">
+        🪲
+      </a>
+      <div class="hib-label" data-lang="nl">Kever</div>
+      <div class="hib-label" data-lang="en">Beetle</div>
+    </div>
+    <div>
+      <a href="citroenvlinder.html" class="hero-insect-bubble hib-2">
+        🦋
+      </a>
+      <div class="hib-label" data-lang="nl">Citroenvlinder</div>
+      <div class="hib-label" data-lang="en">Brimstone</div>
+    </div>
+    <div>
+      <a href="lieveheersbeestje.html" class="hero-insect-bubble hib-3">
+        🐞
+      </a>
+      <div class="hib-label" data-lang="nl">Lieveheersbeestje</div>
+      <div class="hib-label" data-lang="en">Ladybug</div>
+    </div>
+  </div>
+</section>
+
+<div class="vine-divider"></div>
+
+<!-- ══ HOW IT WORKS ═════════════════════════════════════ -->
+<section class="how-section" id="hoe-het-werkt">
+  <div class="how-inner">
+    <span class="eyebrow" data-lang="nl">Hoe het werkt</span>
+    <span class="eyebrow" data-lang="en">How it works</span>
+    <h2 data-lang="nl">Drie stappen naar wilde ontdekking</h2>
+    <h2 data-lang="en">Three steps to wild discovery</h2>
+
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-step-num">01</div>
+        <div style="font-size:2rem">🪧</div>
+        <h3 data-lang="nl">Vind het bord</h3>
+        <h3 data-lang="en">Find the sign</h3>
+        <p data-lang="nl">In het Spoorpark staat een bord dat je vertelt welke drie insecten er vlakbij wonen — en hoe je de QR-codes scant.</p>
+        <p data-lang="en">A sign in Spoorpark tells you which three insects live nearby — and how to scan the QR codes.</p>
       </div>
-      <div class="stat-item">
-        <span class="stat-num">100+</span>
-        <span class="stat-label">Countries</span>
+      <div class="how-step">
+        <div class="how-step-num">02</div>
+        <div style="font-size:2rem">🔍</div>
+        <h3 data-lang="nl">Zoek ze op</h3>
+        <h3 data-lang="en">Seek them out</h3>
+        <p data-lang="nl">Elk insect heeft een favoriete plek in het park. Zoek de omschreven plek op — een dode boom, een bloeiende struik, een stapel stenen.</p>
+        <p data-lang="en">Each insect has a favourite spot in the park. Find the described location — a dead log, a flowering shrub, a pile of stones.</p>
       </div>
-      <div class="stat-item">
-        <span class="stat-num">80mm</span>
-        <span class="stat-label">Max Length</span>
+      <div class="how-step">
+        <div class="how-step-num">03</div>
+        <div style="font-size:2rem">📱</div>
+        <h3 data-lang="nl">Scan &amp; ontdek</h3>
+        <h3 data-lang="en">Scan &amp; discover</h3>
+        <p data-lang="nl">Scan de QR-code bij het insect. Ga naar de pagina, leer waarom dit beestje zo belangrijk is, en voeg jouw waarneming toe.</p>
+        <p data-lang="en">Scan the QR code near the insect. Go to the page, learn why this creature matters, and add your sighting.</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">04</div>
+        <div style="font-size:2rem">🌱</div>
+        <h3 data-lang="nl">Vertel het door</h3>
+        <h3 data-lang="en">Spread the word</h3>
+        <p data-lang="nl">Deel wat je hebt gevonden. Hoe meer mensen meedoen, hoe meer de buurt de wilde natuur gaat waarderen.</p>
+        <p data-lang="en">Share what you found. The more people join, the more the neighbourhood comes to appreciate wild nature.</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ════════════════════════════════ CARDS ════════════════════════════════ -->
-<div class="content">
-  <div class="section-grid">
-    <div class="section-card">
-      <p class="card-num">01 — Habitat</p>
-      <h3 class="card-title">Where They Thrive</h3>
-      <p class="card-body">
-        Jewel beetles colonise every continent except Antarctica, favouring
-        warm, humid forests where dead or dying wood is abundant. Many species
-        are critically dependent on old-growth trees, making them key
-        indicators of forest ecosystem health. Larvae spend years tunnelling
-        through heartwood, reshaping the forest from within.
-      </p>
-    </div>
-    <div class="section-card">
-      <p class="card-num">02 — Diet</p>
-      <h3 class="card-title">Timber &amp; Pollen</h3>
-      <p class="card-body">
-        Adult jewel beetles feed on nectar, pollen, and foliage, becoming
-        accidental pollinators as they move between flowers. Their larvae,
-        however, are dedicated xylophages — burrowing into phloem and
-        heartwood where they digest cellulose-rich material using specialised
-        gut microbiota, a biological feat still under scientific investigation.
-      </p>
-    </div>
-    <div class="section-card">
-      <p class="card-num">03 — Behaviour</p>
-      <h3 class="card-title">Pyrophilous Senses</h3>
-      <p class="card-body">
-        Certain jewel beetles (<em>Melanophila</em>) possess infrared
-        pit organs on their thorax — among the most sensitive heat detectors
-        in the animal kingdom. They detect forest fires from 80 km away and
-        race toward smouldering trees to lay eggs in freshly charred wood,
-        before competitors arrive. Fire is their opportunity.
-      </p>
-    </div>
-  </div>
-</div>
+<div class="vine-divider"></div>
 
-<!-- ════════════════════════════════ IRIDESCENCE ════════════════════════════ -->
-<section class="irid-section">
-  <div class="irid-inner">
-    <div class="irid-text">
-      <p class="section-label">Structural Colour · Photonics</p>
-      <h2>Not Pigment,<br>But Physics</h2>
-      <p>
-        The jewel beetle's extraordinary shimmer contains no coloured dye.
-        Its elytra are layered with thin-film nanostructures — stacked
-        cuticle lamellae just 70–200 nm thick. Incident light reflects
-        from each layer, interfering constructively at specific wavelengths
-        to produce colours that shift and sing as the viewing angle changes.
-        Scientists have replicated this structure to create
-        next-generation anti-counterfeiting materials and bio-inspired optical films.
+<!-- ══ SPOORPARK ════════════════════════════════════════ -->
+<section class="section">
+  <div class="spoorpark-section" style="max-width:900px;margin:0 auto;padding:0">
+    <div>
+      <span class="eyebrow">Spoorpark · Tilburg</span>
+      <h2 data-lang="nl">Een park dat zichzelf opnieuw<br><em style="font-style:italic;color:var(--moss)">uitvindt</em></h2>
+      <h2 data-lang="en">A park that reinvents<br><em style="font-style:italic;color:var(--moss)">itself</em></h2>
+      <div class="divider" style="margin:1rem 0"></div>
+      <p data-lang="nl" style="color:var(--text-mid);line-height:1.75;margin-bottom:1rem">
+        Het Spoorpark in Tilburg is een voormalig spooremplacement dat langzaam wordt teruggegeven aan de natuur. Verwilderde hoeken, oude bomen en nieuwe ecologische zones maken het park tot een groene long voor de stad.
+      </p>
+      <p data-lang="en" style="color:var(--text-mid);line-height:1.75;margin-bottom:1rem">
+        Spoorpark in Tilburg is a former railway yard slowly being returned to nature. Wild corners, old trees and new ecological zones make the park a green lung for the city.
+      </p>
+      <p data-lang="nl" style="color:var(--text-mid);line-height:1.75">
+        Wildspoor maakt de stille bewoners van dit park zichtbaar — voor buurtbewoners die er elke dag doorlopen zonder te weten wat er leeft.
+      </p>
+      <p data-lang="en" style="color:var(--text-mid);line-height:1.75">
+        Wildspoor makes the silent inhabitants of this park visible — for residents who walk through every day without knowing what lives there.
       </p>
     </div>
-    <div class="spectrum">
-      <div class="spec-row">
-        <span class="spec-name">Emerald</span>
-        <div class="spec-bar" style="background: linear-gradient(90deg, #1a6649 0%, #4db89e 60%, #a8f0dc 100%); width:90%;"></div>
-      </div>
-      <div class="spec-row">
-        <span class="spec-name">Gold</span>
-        <div class="spec-bar" style="background: linear-gradient(90deg, #8b5e00 0%, #e2b34b 60%, #fff0a0 100%); width:75%;"></div>
-      </div>
-      <div class="spec-row">
-        <span class="spec-name">Copper</span>
-        <div class="spec-bar" style="background: linear-gradient(90deg, #6b2800 0%, #c8640a 60%, #f0a060 100%); width:65%;"></div>
-      </div>
-      <div class="spec-row">
-        <span class="spec-name">Violet</span>
-        <div class="spec-bar" style="background: linear-gradient(90deg, #2a0050 0%, #8040c0 60%, #d0a0ff 100%); width:50%;"></div>
-      </div>
-      <div class="spec-row">
-        <span class="spec-name">Azure</span>
-        <div class="spec-bar" style="background: linear-gradient(90deg, #001a4a 0%, #2060c0 60%, #80b0ff 100%); width:80%;"></div>
-      </div>
+    <div class="spoorpark-map-placeholder">
+      <div class="spoorpark-map-icon">📍</div>
+      <div>Spoorpark, Tilburg</div>
+      <div style="font-size:0.72rem;opacity:0.6" data-lang="nl">kaart binnenkort beschikbaar</div>
+      <div style="font-size:0.72rem;opacity:0.6" data-lang="en">map coming soon</div>
     </div>
   </div>
 </section>
 
-<!-- ════════════════════════════════ LIFECYCLE ════════════════════════════ -->
-<section class="lifecycle">
-  <h2>Life Cycle</h2>
-  <div class="timeline">
-    <div class="tl-step">
-      <div class="tl-dot"></div>
-      <p class="tl-num">Stage 01</p>
-      <h4 class="tl-title">Egg</h4>
-      <p class="tl-desc">Females lay eggs in bark crevices or freshly scorched wood. Each clutch may contain 40–100 eggs. Hatching occurs within 1–3 weeks depending on temperature.</p>
-    </div>
-    <div class="tl-step">
-      <div class="tl-dot"></div>
-      <p class="tl-num">Stage 02</p>
-      <h4 class="tl-title">Larva</h4>
-      <p class="tl-desc">The legless larva bores sinuous galleries deep into wood, feeding for 1–5 years. This phase sculpts the distinctive winding trails visible in salvaged timber.</p>
-    </div>
-    <div class="tl-step">
-      <div class="tl-dot"></div>
-      <p class="tl-num">Stage 03</p>
-      <h4 class="tl-title">Pupa</h4>
-      <p class="tl-desc">The larva carves a pupal chamber near the surface and metamorphoses for 3–6 weeks as the jewelled shell and compound eyes take form beneath old skin.</p>
-    </div>
-    <div class="tl-step">
-      <div class="tl-dot"></div>
-      <p class="tl-num">Stage 04</p>
-      <h4 class="tl-title">Adult</h4>
-      <p class="tl-desc">The adult chews a perfectly oval exit hole and emerges to live just 2–6 weeks — its sole purpose to feed, find a mate, and ensure the next generation.</p>
-    </div>
+<!-- ══ MISSION ══════════════════════════════════════════ -->
+<section class="mission-section">
+  <div class="mission-inner">
+    <span class="eyebrow" style="color:var(--leaf)">Waarom · Why</span>
+    <h2 data-lang="nl">Verwilderd is niet verwaarloosd</h2>
+    <h2 data-lang="en">Rewilded is not neglected</h2>
+    <p data-lang="nl">
+      Een dode boom, een hoek met brandnetels, een stapel rottend hout — het ziet er misschien rommelig uit, maar voor honderden soorten is het een wereld op zichzelf. Wildspoor wil stedelingen laten zien dat wat ruig lijkt, juist leven is.
+    </p>
+    <p data-lang="en">
+      A dead tree, a patch of nettles, a pile of rotting wood — it might look messy, but for hundreds of species it's a world of its own. Wildspoor wants to show city dwellers that what looks rough is actually teeming with life.
+    </p>
+    <p data-lang="nl" style="opacity:0.5;font-size:0.85rem;margin-top:1.5rem">
+      Door buurtbewoners te betrekken, groeit de acceptatie van wilde natuur in de stad — en daarmee de biodiversiteit.
+    </p>
+    <p data-lang="en" style="opacity:0.5;font-size:0.85rem;margin-top:1.5rem">
+      By involving residents, acceptance of wild nature in the city grows — and with it, biodiversity.
+    </p>
+    <a href="meedoen.html" class="btn btn-primary" style="margin-top:2rem" data-lang="nl">Dit concept voor jouw plek</a>
+    <a href="meedoen.html" class="btn btn-primary" style="margin-top:2rem" data-lang="en">This concept for your space</a>
   </div>
 </section>
 
-<!-- ════════════════════════════════ QUOTE ════════════════════════════════ -->
-<div class="quote-block">
-  <blockquote>
-    "It is not possible to look long upon a jewel beetle and remain indifferent
-     to the extraordinary ingenuity of evolution."
-    <cite>— Naturalist's Field Journal, 1887</cite>
-  </blockquote>
-</div>
+<!-- ══ INSECTS CTA ══════════════════════════════════════ -->
+<section class="section" style="text-align:center">
+  <span class="eyebrow" data-lang="nl">Begin je speurtocht</span>
+  <span class="eyebrow" data-lang="en">Start your search</span>
+  <h2 data-lang="nl">Welk insect zoek jij als eerste?</h2>
+  <h2 data-lang="en">Which insect will you find first?</h2>
+  <div class="divider"></div>
+  <div class="insect-cards-row mt-4">
+    <a href="kever.html" class="insect-tracker-card found" style="background:linear-gradient(135deg,var(--bark),var(--moss))">
+      <div class="tracker-insect-img"><div style="font-size:4rem;line-height:1">🪲</div></div>
+      <div class="tracker-name" data-lang="nl">Kever</div>
+      <div class="tracker-name" data-lang="en">Beetle</div>
+      <div class="tracker-status" data-lang="nl">Bij de dode boom →</div>
+      <div class="tracker-status" data-lang="en">By the dead log →</div>
+    </a>
+    <a href="citroenvlinder.html" class="insect-tracker-card found" style="background:linear-gradient(135deg,#6a5a10,#9a8a30)">
+      <div class="tracker-insect-img"><div style="font-size:4rem;line-height:1">🦋</div></div>
+      <div class="tracker-name" data-lang="nl">Citroenvlinder</div>
+      <div class="tracker-name" data-lang="en">Brimstone</div>
+      <div class="tracker-status" data-lang="nl">Bij de Vleugeltjesbloem →</div>
+      <div class="tracker-status" data-lang="en">By the milkwort →</div>
+    </a>
+    <a href="lieveheersbeestje.html" class="insect-tracker-card found" style="background:linear-gradient(135deg,#6a1010,#9a3030)">
+      <div class="tracker-insect-img"><div style="font-size:4rem;line-height:1">🐞</div></div>
+      <div class="tracker-name" data-lang="nl">Lieveheersbeestje</div>
+      <div class="tracker-name" data-lang="en">Ladybug</div>
+      <div class="tracker-status" data-lang="nl">Bij de bladluiskolonie →</div>
+      <div class="tracker-status" data-lang="en">By the aphid colony →</div>
+    </a>
+  </div>
+</section>
 
-<p class="footnote">Buprestidae · Order Coleoptera · Kingdom Animalia</p>
+<!-- ══ FOOTER ═══════════════════════════════════════════ -->
+<footer class="site-footer">
+  <p>Wildspoor · Spoorpark Tilburg · 
+    <span data-lang="nl">Een initiatief voor wilde stadnatuur</span>
+    <span data-lang="en">An initiative for urban wild nature</span>
+    · <a href="meedoen.html" data-lang="nl">Meedoen</a><a href="meedoen.html" data-lang="en">Join</a>
+  </p>
+</footer>
 
-</body>
-</html>
+<script src="js/app.js"></script>
+
+
+</body></html>
